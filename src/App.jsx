@@ -5,12 +5,15 @@ import {
   CalendarCheck,
   CheckCircle2,
   ChevronRight,
+  Clock3,
+  DollarSign,
   FileText,
   GraduationCap,
   LayoutDashboard,
   Lightbulb,
   ListChecks,
   MapPin,
+  Bookmark,
   Search,
   Sparkles,
   Star,
@@ -397,52 +400,138 @@ function OpportunityPage({
   );
 }
 
-function OpportunityCard({ item, category, saved, active, onSelect, onSave, onApply, compact }) {
+function OpportunityCard({ item, category, saved, active, onSelect, onSave, onApply }) {
+  const isInternship = category === "internship";
+  const logoLetters = item.company
+    .split(" ")
+    .map((word) => word[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+
   return (
     <article
       onClick={onSelect}
-      className={`card cursor-pointer p-4 transition hover:-translate-y-0.5 hover:border-blue-200 ${
-        active ? "border-blue-300 ring-4 ring-blue-100" : ""
+      className={`cursor-pointer rounded-[20px] border bg-white p-6 shadow-soft transition hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-lg ${
+        active ? "border-blue-300 ring-4 ring-blue-100" : "border-slate-200"
       }`}
     >
-      <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-        <div className="min-w-0">
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="pill bg-blue-50 text-blue-700">{item.match}% Career Match</span>
-            <span className="pill">{item.type}</span>
-            {item.level && <span className="pill">{item.level}</span>}
+      <div className="grid gap-5 xl:grid-cols-[minmax(210px,25%)_minmax(280px,45%)_minmax(190px,30%)] xl:items-stretch">
+        <section className="flex min-w-0 gap-4">
+          <div className={`flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl text-lg font-extrabold shadow-sm ${
+            isInternship ? "bg-purple-50 text-purple-700" : "bg-blue-50 text-blue-700"
+          }`}>
+            {logoLetters}
           </div>
-          <h3 className="mt-3 text-lg font-extrabold text-slate-950">{item.title}</h3>
-          <div className="mt-2 flex flex-wrap gap-3 text-sm font-medium text-slate-500">
-            <span className="flex items-center gap-1.5"><Building2 size={15} />{item.company}</span>
-            <span className="flex items-center gap-1.5"><MapPin size={15} />{item.location}</span>
-            {item.salary && <span>{item.salary}</span>}
+          <div className="min-w-0">
+            <div className="mb-3 flex flex-wrap gap-2">
+              <OpportunityBadge tone={isInternship ? "purple" : "blue"} label={isInternship ? "Internship" : "Job"} />
+              <OpportunityBadge tone="blue" label={item.type} />
+              {item.location === "Remote" && <OpportunityBadge tone="green" label="Remote" />}
+              {item.level && <OpportunityBadge tone="slate" label={item.level} />}
+            </div>
+            <h3 className="text-[22px] font-extrabold leading-tight text-slate-950">{item.title}</h3>
+            <p className="mt-2 text-base font-semibold text-slate-700">{item.company}</p>
           </div>
-          {!compact && <p className="mt-3 text-sm leading-6 text-slate-600">{item.description}</p>}
-        </div>
-        <div className="flex shrink-0 gap-2">
+        </section>
+
+        <section className="min-w-0 space-y-4 rounded-2xl bg-slate-50/70 p-4">
+          <div className="flex flex-wrap items-center gap-3">
+            <MatchBadge score={item.match} />
+            <span className="text-sm font-semibold text-slate-500">{item.posted || "Posted recently"}</span>
+          </div>
+          <div className="grid gap-3 text-sm font-medium text-slate-600 sm:grid-cols-2">
+            <MetaItem icon={MapPin} label={item.location} />
+            <MetaItem icon={Clock3} label={item.duration || item.type} />
+            {item.salary && <MetaItem icon={DollarSign} label={item.salary} />}
+            {!item.salary && <MetaItem icon={CalendarCheck} label={item.industry} />}
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {item.skills.slice(0, 5).map((skill) => (
+              <span key={skill} className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-600">
+                {skill}
+              </span>
+            ))}
+          </div>
+        </section>
+
+        <section className="flex flex-col justify-between gap-4 xl:items-end">
           <button
-            className="secondary-button flex-1 whitespace-nowrap md:flex-none"
+            className="icon-button self-end"
+            aria-label={saved ? "Saved opportunity" : "Save opportunity"}
             onClick={(event) => {
               event.stopPropagation();
               onSave();
             }}
           >
-            <Star size={16} className={saved ? "fill-purple-500 text-purple-500" : ""} />
-            {saved ? "Saved" : "Save"}
+            <Bookmark size={18} className={saved ? "fill-purple-500 text-purple-500" : ""} />
           </button>
-          <button
-            className="primary-button flex-1 whitespace-nowrap md:flex-none"
-            onClick={(event) => {
-              event.stopPropagation();
-              onApply();
-            }}
-          >
-            Apply
-          </button>
-        </div>
+          <div className="grid gap-3 sm:grid-cols-3 xl:w-full xl:grid-cols-1">
+            <button
+              className="secondary-button w-full whitespace-nowrap"
+              onClick={(event) => {
+                event.stopPropagation();
+                onSave();
+              }}
+            >
+              <Star size={16} className={saved ? "fill-purple-500 text-purple-500" : ""} />
+              {saved ? "Saved" : "Save"}
+            </button>
+            <button
+              className="primary-button w-full whitespace-nowrap"
+              onClick={(event) => {
+                event.stopPropagation();
+                onApply();
+              }}
+            >
+              Apply Now
+            </button>
+            <button
+              className="secondary-button w-full whitespace-nowrap"
+              onClick={(event) => {
+                event.stopPropagation();
+                onSelect?.();
+              }}
+            >
+              View Details
+            </button>
+          </div>
+        </section>
       </div>
     </article>
+  );
+}
+
+function OpportunityBadge({ tone, label }) {
+  const tones = {
+    purple: "bg-purple-50 text-purple-700 ring-purple-100",
+    blue: "bg-blue-50 text-blue-700 ring-blue-100",
+    green: "bg-emerald-50 text-emerald-700 ring-emerald-100",
+    slate: "bg-slate-100 text-slate-700 ring-slate-200"
+  };
+
+  return (
+    <span className={`rounded-full px-3 py-1 text-xs font-extrabold ring-1 ${tones[tone]}`}>
+      {label}
+    </span>
+  );
+}
+
+function MatchBadge({ score }) {
+  return (
+    <div className="inline-flex items-center gap-2 rounded-full border border-blue-100 bg-white px-3 py-2 shadow-sm">
+      <span className="text-sm tracking-wide text-amber-400">★★★★<span className="text-slate-300">☆</span></span>
+      <span className="text-sm font-extrabold text-blue-700">{score}% Match</span>
+    </div>
+  );
+}
+
+function MetaItem({ icon: Icon, label }) {
+  return (
+    <span className="flex min-w-0 items-center gap-2">
+      <Icon size={16} className="shrink-0 text-slate-400" />
+      <span className="truncate">{label}</span>
+    </span>
   );
 }
 

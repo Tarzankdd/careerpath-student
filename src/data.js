@@ -11,7 +11,8 @@ export const internships = [
     location: "Phnom Penh",
     match: 94,
     duration: "12 weeks",
-    skills: ["Campaign planning", "Social media", "Analytics"],
+    posted: "Posted 2 days ago",
+    skills: ["Campaign planning", "Social media", "Analytics", "Copywriting"],
     description: "Support product launches, research student audiences, and build weekly performance reports."
   },
   {
@@ -23,7 +24,8 @@ export const internships = [
     location: "Remote",
     match: 91,
     duration: "4 months",
-    skills: ["React", "Git", "UI components"],
+    posted: "Posted 4 days ago",
+    skills: ["React", "JavaScript", "Git", "UI components"],
     description: "Build responsive interface components with mentorship from a product engineering team."
   },
   {
@@ -35,7 +37,8 @@ export const internships = [
     location: "Hybrid",
     match: 87,
     duration: "10 weeks",
-    skills: ["Excel", "Reporting", "Budget tracking"],
+    posted: "Posted 1 week ago",
+    skills: ["Excel", "Reporting", "Budget tracking", "Forecasting"],
     description: "Assist with weekly financial dashboards and learn how operations teams prepare forecasts."
   },
   {
@@ -47,7 +50,8 @@ export const internships = [
     location: "Siem Reap",
     match: 83,
     duration: "3 months",
-    skills: ["Interviewing", "Figma", "Usability testing"],
+    posted: "Posted 6 days ago",
+    skills: ["Interviewing", "Figma", "Usability testing", "Research"],
     description: "Plan student interviews, synthesize user pain points, and document product opportunities."
   }
 ];
@@ -63,7 +67,8 @@ export const jobs = [
     location: "Phnom Penh",
     salary: "$650 - $850 / month",
     match: 92,
-    skills: ["Research", "Presentations", "SQL basics"],
+    posted: "Posted today",
+    skills: ["Research", "Presentations", "SQL basics", "Dashboards"],
     description: "Turn operational data into clear recommendations for a fast-growing mobility team."
   },
   {
@@ -76,7 +81,8 @@ export const jobs = [
     location: "Hybrid",
     salary: "$800 - $1,100 / month",
     match: 89,
-    skills: ["JavaScript", "React", "Accessibility"],
+    posted: "Posted 3 days ago",
+    skills: ["JavaScript", "React", "Accessibility", "TypeScript"],
     description: "Create customer-facing features for a digital payment product used by small businesses."
   },
   {
@@ -89,7 +95,8 @@ export const jobs = [
     location: "Remote",
     salary: "$7 - $10 / hour",
     match: 85,
-    skills: ["Branding", "Figma", "Layout"],
+    posted: "Posted 5 days ago",
+    skills: ["Branding", "Figma", "Layout", "UI/UX"],
     description: "Help prepare social assets, pitch decks, and portfolio-ready brand systems."
   },
   {
@@ -102,7 +109,8 @@ export const jobs = [
     location: "Phnom Penh",
     salary: "$450 - $600 / month",
     match: 82,
-    skills: ["Email marketing", "Events", "Copywriting"],
+    posted: "Posted 1 week ago",
+    skills: ["Email marketing", "Events", "Copywriting", "Analytics"],
     description: "Coordinate campus events, write outreach copy, and track growth experiments."
   }
 ];
