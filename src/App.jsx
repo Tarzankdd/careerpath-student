@@ -311,28 +311,29 @@ function DashboardOpportunityRow({ item, saved, onSave, onApply }) {
 
   return (
     <article className="bg-white p-5 transition hover:bg-slate-50">
-      <div className="grid gap-5 2xl:grid-cols-[minmax(0,1.15fr)_minmax(230px,0.85fr)_170px] 2xl:items-center">
-        <div className="flex min-w-0 gap-4">
-          <div className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl text-base font-extrabold shadow-sm ${isJob ? "bg-blue-50 text-blue-700" : "bg-purple-50 text-purple-700"}`}>
-            {logoLetters}
-          </div>
-          <div className="min-w-0">
-            <div className="flex flex-wrap items-center gap-2">
-              <OpportunityBadge tone={isJob ? "blue" : "purple"} label={isJob ? "Job" : "Internship"} />
-              <OpportunityBadge tone="slate" label={item.type} />
-              {item.location === "Remote" && <OpportunityBadge tone="green" label="Remote" />}
-            </div>
-            <h4 className="mt-2 text-xl font-extrabold leading-tight text-slate-950">{item.title}</h4>
-            <p className="mt-1 text-sm font-semibold text-slate-600">{item.company}</p>
-          </div>
+      <div className="grid gap-5 md:grid-cols-[64px_minmax(0,1fr)_180px] md:items-start">
+        <div className={`flex h-16 w-16 items-center justify-center rounded-2xl text-lg font-extrabold shadow-sm ${isJob ? "bg-blue-50 text-blue-700" : "bg-purple-50 text-purple-700"}`}>
+          {logoLetters}
         </div>
 
         <div className="min-w-0 space-y-3">
+          <div className="flex flex-wrap gap-2">
+            <OpportunityBadge tone={isJob ? "blue" : "purple"} label={isJob ? "Job" : "Internship"} />
+            <OpportunityBadge tone="slate" label={item.type} />
+            {item.location === "Remote" && <OpportunityBadge tone="green" label="Remote" />}
+          </div>
+
+          <div>
+            <h4 className="text-xl font-extrabold leading-tight text-slate-950">{item.title}</h4>
+            <p className="mt-1 text-sm font-semibold text-slate-600">{item.company}</p>
+          </div>
+
           <div className="flex flex-wrap gap-x-4 gap-y-2 text-sm font-medium text-slate-500">
             <MetaItem icon={MapPin} label={item.location} />
             <MetaItem icon={Clock3} label={item.duration || item.type} />
             {item.salary && <MetaItem icon={DollarSign} label={item.salary} />}
           </div>
+
           <div className="flex flex-wrap gap-2">
             {item.skills.slice(0, 4).map((skill) => (
               <span key={skill} className="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-600">
@@ -340,13 +341,14 @@ function DashboardOpportunityRow({ item, saved, onSave, onApply }) {
               </span>
             ))}
           </div>
-          <div className="flex flex-wrap items-center gap-3">
+
+          <div className="flex flex-wrap items-center gap-3 pt-1">
             <MatchBadge score={item.match} />
             <span className="text-xs font-bold text-slate-400">{item.posted || "Posted recently"}</span>
           </div>
         </div>
 
-        <div className="grid gap-2 sm:grid-cols-[1fr_1fr_auto] 2xl:grid-cols-1">
+        <div className="grid gap-2 sm:grid-cols-[1fr_1fr_auto] md:grid-cols-1">
           <button
             className="secondary-button min-w-0 whitespace-nowrap"
             onClick={onSave}
@@ -357,7 +359,7 @@ function DashboardOpportunityRow({ item, saved, onSave, onApply }) {
           <button className="primary-button min-w-0 whitespace-nowrap" onClick={onApply}>
             Apply Now
           </button>
-          <button className="icon-button justify-self-end sm:justify-self-auto 2xl:justify-self-end" onClick={onSave} aria-label="Bookmark">
+          <button className="icon-button justify-self-end sm:justify-self-auto md:justify-self-end" onClick={onSave} aria-label="Bookmark">
             <Bookmark size={18} className={saved ? "fill-purple-500 text-purple-500" : ""} />
           </button>
         </div>
