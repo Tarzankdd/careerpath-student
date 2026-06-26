@@ -234,19 +234,13 @@ function Dashboard({ setActiveTab, saveOpportunity, applyOpportunity, saved, che
       </section>
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_340px] 2xl:grid-cols-[minmax(0,1fr)_360px]">
-        <section className="min-w-0">
-          <DashboardPanel title="Recommended Opportunities">
-            {recommended.map((item) => (
-              <DashboardOpportunityRow
-                key={item.id}
-                item={item}
-                saved={saved.some((savedItem) => savedItem.id === item.id)}
-                onSave={() => saveOpportunity(item, item.category)}
-                onApply={() => applyOpportunity(item)}
-              />
-            ))}
-          </DashboardPanel>
-        </section>
+        <RecommendationBoard
+          items={recommended}
+          saved={saved}
+          onSave={saveOpportunity}
+          onApply={applyOpportunity}
+          setActiveTab={setActiveTab}
+        />
         <aside className="space-y-6">
           <AICard />
           <DashboardPanel title="Progress Tracker">
@@ -271,43 +265,88 @@ function DashboardPanel({ title, children }) {
   );
 }
 
+function RecommendationBoard({ items, saved, onSave, onApply, setActiveTab }) {
+  return (
+    <section className="card min-w-0 overflow-hidden">
+      <div className="flex flex-col gap-4 border-b border-slate-200 p-6 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <p className="text-sm font-bold uppercase tracking-wide text-blue-600">Top matches today</p>
+          <h3 className="mt-1 text-2xl font-extrabold text-slate-950">Recommended Opportunities</h3>
+          <p className="mt-2 text-sm font-medium text-slate-500">
+            Internships and jobs ranked by your profile, skills, and current career goal.
+          </p>
+        </div>
+        <div className="flex gap-2">
+          <button className="secondary-button whitespace-nowrap" onClick={() => setActiveTab("internships")}>
+            Internships
+          </button>
+          <button className="primary-button whitespace-nowrap" onClick={() => setActiveTab("jobs")}>
+            Jobs
+          </button>
+        </div>
+      </div>
+      <div className="divide-y divide-slate-100">
+        {items.map((item) => (
+          <DashboardOpportunityRow
+            key={item.id}
+            item={item}
+            saved={saved.some((savedItem) => savedItem.id === item.id)}
+            onSave={() => onSave(item, item.category)}
+            onApply={() => onApply(item)}
+          />
+        ))}
+      </div>
+    </section>
+  );
+}
+
 function DashboardOpportunityRow({ item, saved, onSave, onApply }) {
   const isJob = item.category === "job";
+  const logoLetters = item.company
+    .split(" ")
+    .map((word) => word[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
 
   return (
-    <article className="rounded-2xl border border-slate-200 bg-white p-4 transition hover:border-blue-200 hover:bg-slate-50">
-      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_116px_232px] lg:items-center">
+    <article className="bg-white p-5 transition hover:bg-slate-50">
+      <div className="grid gap-5 2xl:grid-cols-[minmax(0,1.15fr)_minmax(230px,0.85fr)_170px] 2xl:items-center">
         <div className="flex min-w-0 gap-4">
-          <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl ${isJob ? "bg-blue-50 text-blue-700" : "bg-purple-50 text-purple-700"}`}>
-            {isJob ? <BriefcaseBusiness size={22} /> : <GraduationCap size={22} />}
+          <div className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl text-base font-extrabold shadow-sm ${isJob ? "bg-blue-50 text-blue-700" : "bg-purple-50 text-purple-700"}`}>
+            {logoLetters}
           </div>
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
-              <span className={`rounded-full px-2.5 py-1 text-xs font-extrabold ${isJob ? "bg-blue-50 text-blue-700" : "bg-purple-50 text-purple-700"}`}>
-                {isJob ? "Job" : "Internship"}
-              </span>
-              <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-600">{item.type}</span>
-              {item.level && <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-600">{item.level}</span>}
+              <OpportunityBadge tone={isJob ? "blue" : "purple"} label={isJob ? "Job" : "Internship"} />
+              <OpportunityBadge tone="slate" label={item.type} />
+              {item.location === "Remote" && <OpportunityBadge tone="green" label="Remote" />}
             </div>
-            <h4 className="mt-2 truncate text-lg font-extrabold text-slate-950">{item.title}</h4>
-            <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm font-medium text-slate-500">
-              <span className="flex min-w-0 items-center gap-1.5">
-                <Building2 size={15} className="shrink-0" />
-                <span className="truncate">{item.company}</span>
-              </span>
-              <span className="flex items-center gap-1.5">
-                <MapPin size={15} className="shrink-0" />
-                {item.location}
-              </span>
-              <span>{isJob ? item.salary : item.duration}</span>
-            </div>
+            <h4 className="mt-2 text-xl font-extrabold leading-tight text-slate-950">{item.title}</h4>
+            <p className="mt-1 text-sm font-semibold text-slate-600">{item.company}</p>
           </div>
         </div>
-        <div className="flex items-center justify-between rounded-2xl bg-blue-50 px-4 py-3 lg:block lg:text-center">
-          <span className="text-xs font-bold uppercase text-blue-500 lg:block">Match</span>
-          <span className="text-xl font-extrabold text-blue-700 lg:block">{item.match}%</span>
+
+        <div className="min-w-0 space-y-3">
+          <div className="flex flex-wrap gap-x-4 gap-y-2 text-sm font-medium text-slate-500">
+            <MetaItem icon={MapPin} label={item.location} />
+            <MetaItem icon={Clock3} label={item.duration || item.type} />
+            {item.salary && <MetaItem icon={DollarSign} label={item.salary} />}
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {item.skills.slice(0, 4).map((skill) => (
+              <span key={skill} className="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-600">
+                {skill}
+              </span>
+            ))}
+          </div>
+          <div className="flex flex-wrap items-center gap-3">
+            <MatchBadge score={item.match} />
+            <span className="text-xs font-bold text-slate-400">{item.posted || "Posted recently"}</span>
+          </div>
         </div>
-        <div className="grid grid-cols-2 gap-2">
+
+        <div className="grid gap-2 sm:grid-cols-[1fr_1fr_auto] 2xl:grid-cols-1">
           <button
             className="secondary-button min-w-0 whitespace-nowrap"
             onClick={onSave}
@@ -316,7 +355,10 @@ function DashboardOpportunityRow({ item, saved, onSave, onApply }) {
             {saved ? "Saved" : "Save"}
           </button>
           <button className="primary-button min-w-0 whitespace-nowrap" onClick={onApply}>
-            Apply
+            Apply Now
+          </button>
+          <button className="icon-button justify-self-end sm:justify-self-auto 2xl:justify-self-end" onClick={onSave} aria-label="Bookmark">
+            <Bookmark size={18} className={saved ? "fill-purple-500 text-purple-500" : ""} />
           </button>
         </div>
       </div>
