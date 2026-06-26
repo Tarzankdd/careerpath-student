@@ -186,6 +186,10 @@ function Sidebar({ activeTab, setActiveTab, savedCount }) {
 
 function Dashboard({ setActiveTab, saveOpportunity, applyOpportunity, saved, checkedCount }) {
   const progress = Math.round((checkedCount / 9) * 100);
+  const recommended = [
+    ...internships.slice(0, 2).map((item) => ({ ...item, category: "internship" })),
+    ...jobs.slice(0, 2).map((item) => ({ ...item, category: "job" }))
+  ];
 
   return (
     <div className="space-y-6">
@@ -227,30 +231,15 @@ function Dashboard({ setActiveTab, saveOpportunity, applyOpportunity, saved, che
       </section>
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_340px] 2xl:grid-cols-[minmax(0,1fr)_360px]">
-        <section className="grid min-w-0 gap-6 2xl:grid-cols-2">
-          <DashboardPanel title="Recommended Internships">
-            {internships.slice(0, 2).map((item) => (
-              <DashboardOpportunityCard
+        <section className="min-w-0">
+          <DashboardPanel title="Recommended Opportunities">
+            {recommended.map((item) => (
+              <DashboardOpportunityRow
                 key={item.id}
                 item={item}
-                category="internship"
                 saved={saved.some((savedItem) => savedItem.id === item.id)}
-                onSave={() => saveOpportunity(item, "internship")}
+                onSave={() => saveOpportunity(item, item.category)}
                 onApply={() => applyOpportunity(item)}
-                compact
-              />
-            ))}
-          </DashboardPanel>
-          <DashboardPanel title="Recommended Jobs">
-            {jobs.slice(0, 2).map((item) => (
-              <DashboardOpportunityCard
-                key={item.id}
-                item={item}
-                category="job"
-                saved={saved.some((savedItem) => savedItem.id === item.id)}
-                onSave={() => saveOpportunity(item, "job")}
-                onApply={() => applyOpportunity(item)}
-                compact
               />
             ))}
           </DashboardPanel>
@@ -279,46 +268,51 @@ function DashboardPanel({ title, children }) {
   );
 }
 
-function DashboardOpportunityCard({ item, category, saved, onSave, onApply }) {
+function DashboardOpportunityRow({ item, saved, onSave, onApply }) {
+  const isJob = item.category === "job";
+
   return (
-    <article className="rounded-2xl border border-slate-200 bg-white p-4 transition hover:border-blue-200 hover:shadow-md">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-extrabold text-blue-700">
-              {item.match}% match
-            </span>
-            <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-600">
-              {item.type}
-            </span>
-            <span className="rounded-full bg-purple-50 px-3 py-1 text-xs font-bold text-purple-700">
-              {item.industry}
-            </span>
+    <article className="rounded-2xl border border-slate-200 bg-white p-4 transition hover:border-blue-200 hover:bg-slate-50">
+      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_116px_232px] lg:items-center">
+        <div className="flex min-w-0 gap-4">
+          <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl ${isJob ? "bg-blue-50 text-blue-700" : "bg-purple-50 text-purple-700"}`}>
+            {isJob ? <BriefcaseBusiness size={22} /> : <GraduationCap size={22} />}
           </div>
-          <h4 className="mt-3 text-lg font-extrabold leading-snug text-slate-950">{item.title}</h4>
-          <div className="mt-3 grid gap-2 text-sm font-medium text-slate-500 sm:grid-cols-2">
-            <span className="flex min-w-0 items-center gap-2">
-              <Building2 size={15} className="shrink-0" />
-              <span className="truncate">{item.company}</span>
-            </span>
-            <span className="flex min-w-0 items-center gap-2">
-              <MapPin size={15} className="shrink-0" />
-              <span className="truncate">{item.location}</span>
-            </span>
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className={`rounded-full px-2.5 py-1 text-xs font-extrabold ${isJob ? "bg-blue-50 text-blue-700" : "bg-purple-50 text-purple-700"}`}>
+                {isJob ? "Job" : "Internship"}
+              </span>
+              <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-600">{item.type}</span>
+              {item.level && <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-600">{item.level}</span>}
+            </div>
+            <h4 className="mt-2 truncate text-lg font-extrabold text-slate-950">{item.title}</h4>
+            <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm font-medium text-slate-500">
+              <span className="flex min-w-0 items-center gap-1.5">
+                <Building2 size={15} className="shrink-0" />
+                <span className="truncate">{item.company}</span>
+              </span>
+              <span className="flex items-center gap-1.5">
+                <MapPin size={15} className="shrink-0" />
+                {item.location}
+              </span>
+              <span>{isJob ? item.salary : item.duration}</span>
+            </div>
           </div>
-          <p className="mt-3 text-sm font-semibold text-slate-700">
-            {category === "job" ? item.salary : item.duration}
-          </p>
         </div>
-        <div className="flex gap-2 sm:flex-col">
+        <div className="flex items-center justify-between rounded-2xl bg-blue-50 px-4 py-3 lg:block lg:text-center">
+          <span className="text-xs font-bold uppercase text-blue-500 lg:block">Match</span>
+          <span className="text-xl font-extrabold text-blue-700 lg:block">{item.match}%</span>
+        </div>
+        <div className="grid grid-cols-2 gap-2">
           <button
-            className="secondary-button min-w-[112px] flex-1 whitespace-nowrap sm:flex-none"
+            className="secondary-button min-w-0 whitespace-nowrap"
             onClick={onSave}
           >
             <Star size={16} className={saved ? "fill-purple-500 text-purple-500" : ""} />
             {saved ? "Saved" : "Save"}
           </button>
-          <button className="primary-button min-w-[112px] flex-1 whitespace-nowrap sm:flex-none" onClick={onApply}>
+          <button className="primary-button min-w-0 whitespace-nowrap" onClick={onApply}>
             Apply
           </button>
         </div>
