@@ -226,11 +226,11 @@ function Dashboard({ setActiveTab, saveOpportunity, applyOpportunity, saved, che
         </div>
       </section>
 
-      <div className="grid gap-6 xl:grid-cols-[1fr_360px]">
-        <section className="grid gap-6 lg:grid-cols-2">
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_340px] 2xl:grid-cols-[minmax(0,1fr)_360px]">
+        <section className="grid min-w-0 gap-6 2xl:grid-cols-2">
           <DashboardPanel title="Recommended Internships">
             {internships.slice(0, 2).map((item) => (
-              <OpportunityCard
+              <DashboardOpportunityCard
                 key={item.id}
                 item={item}
                 category="internship"
@@ -243,7 +243,7 @@ function Dashboard({ setActiveTab, saveOpportunity, applyOpportunity, saved, che
           </DashboardPanel>
           <DashboardPanel title="Recommended Jobs">
             {jobs.slice(0, 2).map((item) => (
-              <OpportunityCard
+              <DashboardOpportunityCard
                 key={item.id}
                 item={item}
                 category="job"
@@ -272,10 +272,58 @@ function Dashboard({ setActiveTab, saveOpportunity, applyOpportunity, saved, che
 
 function DashboardPanel({ title, children }) {
   return (
-    <div className="card p-5">
-      <h3 className="text-lg font-extrabold text-slate-950">{title}</h3>
+    <div className="card min-w-0 p-5">
+      <h3 className="text-xl font-extrabold text-slate-950">{title}</h3>
       <div className="mt-4 space-y-4">{children}</div>
     </div>
+  );
+}
+
+function DashboardOpportunityCard({ item, category, saved, onSave, onApply }) {
+  return (
+    <article className="rounded-2xl border border-slate-200 bg-white p-4 transition hover:border-blue-200 hover:shadow-md">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-extrabold text-blue-700">
+              {item.match}% match
+            </span>
+            <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-600">
+              {item.type}
+            </span>
+            <span className="rounded-full bg-purple-50 px-3 py-1 text-xs font-bold text-purple-700">
+              {item.industry}
+            </span>
+          </div>
+          <h4 className="mt-3 text-lg font-extrabold leading-snug text-slate-950">{item.title}</h4>
+          <div className="mt-3 grid gap-2 text-sm font-medium text-slate-500 sm:grid-cols-2">
+            <span className="flex min-w-0 items-center gap-2">
+              <Building2 size={15} className="shrink-0" />
+              <span className="truncate">{item.company}</span>
+            </span>
+            <span className="flex min-w-0 items-center gap-2">
+              <MapPin size={15} className="shrink-0" />
+              <span className="truncate">{item.location}</span>
+            </span>
+          </div>
+          <p className="mt-3 text-sm font-semibold text-slate-700">
+            {category === "job" ? item.salary : item.duration}
+          </p>
+        </div>
+        <div className="flex gap-2 sm:flex-col">
+          <button
+            className="secondary-button min-w-[112px] flex-1 whitespace-nowrap sm:flex-none"
+            onClick={onSave}
+          >
+            <Star size={16} className={saved ? "fill-purple-500 text-purple-500" : ""} />
+            {saved ? "Saved" : "Save"}
+          </button>
+          <button className="primary-button min-w-[112px] flex-1 whitespace-nowrap sm:flex-none" onClick={onApply}>
+            Apply
+          </button>
+        </div>
+      </div>
+    </article>
   );
 }
 
@@ -363,7 +411,7 @@ function OpportunityCard({ item, category, saved, active, onSelect, onSave, onAp
         active ? "border-blue-300 ring-4 ring-blue-100" : ""
       }`}
     >
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+      <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
             <span className="pill bg-blue-50 text-blue-700">{item.match}% Career Match</span>
@@ -380,7 +428,7 @@ function OpportunityCard({ item, category, saved, active, onSelect, onSave, onAp
         </div>
         <div className="flex shrink-0 gap-2">
           <button
-            className="secondary-button"
+            className="secondary-button flex-1 whitespace-nowrap md:flex-none"
             onClick={(event) => {
               event.stopPropagation();
               onSave();
@@ -390,7 +438,7 @@ function OpportunityCard({ item, category, saved, active, onSelect, onSave, onAp
             {saved ? "Saved" : "Save"}
           </button>
           <button
-            className="primary-button"
+            className="primary-button flex-1 whitespace-nowrap md:flex-none"
             onClick={(event) => {
               event.stopPropagation();
               onApply();
