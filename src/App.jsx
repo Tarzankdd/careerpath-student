@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   BriefcaseBusiness,
   Building2,
@@ -18,7 +18,8 @@ import {
   Sparkles,
   Star,
   Target,
-  UserRound
+  UserRound,
+  X
 } from "lucide-react";
 import { courses, industries, internships, jobs, locations, roadmap, tips } from "./data.js";
 
@@ -41,6 +42,7 @@ function App() {
   ]);
   const [toast, setToast] = useState("");
   const [checkedSteps, setCheckedSteps] = useState(["Update CV", "Pick 2 career paths"]);
+  const [detailOpportunity, setDetailOpportunity] = useState(null);
 
   const saveOpportunity = (item, category) => {
     setSaved((current) => {
@@ -97,6 +99,7 @@ function App() {
               applyOpportunity={applyOpportunity}
               saved={saved}
               checkedCount={checkedSteps.length}
+              onViewDetails={(item) => setDetailOpportunity(item)}
             />
           )}
           {activeTab === "internships" && (
@@ -109,6 +112,7 @@ function App() {
               saved={saved}
               saveOpportunity={saveOpportunity}
               applyOpportunity={applyOpportunity}
+              onViewDetails={(item) => setDetailOpportunity({ ...item, category: "internship" })}
               showLevel={false}
             />
           )}
@@ -122,6 +126,7 @@ function App() {
               saved={saved}
               saveOpportunity={saveOpportunity}
               applyOpportunity={applyOpportunity}
+              onViewDetails={(item) => setDetailOpportunity({ ...item, category: "job" })}
               showLevel
             />
           )}
@@ -132,6 +137,15 @@ function App() {
           {activeTab === "saved" && <Saved saved={saved} updateStatus={updateStatus} />}
         </main>
       </div>
+      {detailOpportunity && (
+        <OpportunityDetailsModal
+          item={detailOpportunity}
+          saved={saved.some((savedItem) => savedItem.id === detailOpportunity.id)}
+          onClose={() => setDetailOpportunity(null)}
+          onSave={() => saveOpportunity(detailOpportunity, detailOpportunity.category)}
+          onApply={() => applyOpportunity(detailOpportunity)}
+        />
+      )}
     </div>
   );
 }
@@ -187,7 +201,7 @@ function Sidebar({ activeTab, setActiveTab, savedCount }) {
   );
 }
 
-function Dashboard({ setActiveTab, saveOpportunity, applyOpportunity, saved, checkedCount }) {
+function Dashboard({ setActiveTab, saveOpportunity, applyOpportunity, saved, checkedCount, onViewDetails }) {
   const progress = Math.round((checkedCount / 9) * 100);
   const recommended = [
     ...internships.slice(0, 2).map((item) => ({ ...item, category: "internship" })),
@@ -239,6 +253,7 @@ function Dashboard({ setActiveTab, saveOpportunity, applyOpportunity, saved, che
           saved={saved}
           onSave={saveOpportunity}
           onApply={applyOpportunity}
+          onViewDetails={onViewDetails}
           setActiveTab={setActiveTab}
         />
         <aside className="space-y-6">
@@ -265,7 +280,7 @@ function DashboardPanel({ title, children }) {
   );
 }
 
-function RecommendationBoard({ items, saved, onSave, onApply, setActiveTab }) {
+function RecommendationBoard({ items, saved, onSave, onApply, onViewDetails, setActiveTab }) {
   return (
     <section className="card min-w-0 overflow-hidden">
       <div className="flex flex-col gap-4 border-b border-slate-200 p-6 sm:flex-row sm:items-center sm:justify-between">
@@ -293,6 +308,7 @@ function RecommendationBoard({ items, saved, onSave, onApply, setActiveTab }) {
             saved={saved.some((savedItem) => savedItem.id === item.id)}
             onSave={() => onSave(item, item.category)}
             onApply={() => onApply(item)}
+            onViewDetails={() => onViewDetails(item)}
           />
         ))}
       </div>
@@ -300,7 +316,7 @@ function RecommendationBoard({ items, saved, onSave, onApply, setActiveTab }) {
   );
 }
 
-function DashboardOpportunityRow({ item, saved, onSave, onApply }) {
+function DashboardOpportunityRow({ item, saved, onSave, onApply, onViewDetails }) {
   const isJob = item.category === "job";
   const logoLetters = item.company
     .split(" ")
@@ -359,6 +375,9 @@ function DashboardOpportunityRow({ item, saved, onSave, onApply }) {
           <button className="primary-button min-w-0 whitespace-nowrap" onClick={onApply}>
             Apply Now
           </button>
+          <button className="secondary-button min-w-0 whitespace-nowrap" onClick={onViewDetails}>
+            View Details
+          </button>
           <button className="icon-button justify-self-end sm:justify-self-auto md:justify-self-end" onClick={onSave} aria-label="Bookmark">
             <Bookmark size={18} className={saved ? "fill-purple-500 text-purple-500" : ""} />
           </button>
@@ -377,6 +396,7 @@ function OpportunityPage({
   saved,
   saveOpportunity,
   applyOpportunity,
+  onViewDetails,
   showLevel
 }) {
   const [type, setType] = useState("All");
@@ -429,6 +449,7 @@ function OpportunityPage({
               onSelect={() => setSelectedId(item.id)}
               onSave={() => saveOpportunity(item, category)}
               onApply={() => applyOpportunity(item)}
+              onViewDetails={() => onViewDetails(item)}
             />
           ))}
           {!filtered.length && (
@@ -444,7 +465,7 @@ function OpportunityPage({
   );
 }
 
-function OpportunityCard({ item, category, saved, active, onSelect, onSave, onApply }) {
+function OpportunityCard({ item, category, saved, active, onSelect, onSave, onApply, onViewDetails }) {
   const isInternship = category === "internship";
   const logoLetters = item.company
     .split(" ")
@@ -455,7 +476,10 @@ function OpportunityCard({ item, category, saved, active, onSelect, onSave, onAp
 
   return (
     <article
-      onClick={onSelect}
+      onClick={() => {
+        onSelect();
+        onViewDetails();
+      }}
       className={`cursor-pointer rounded-[20px] border bg-white p-6 shadow-soft transition hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-lg ${
         active ? "border-blue-300 ring-4 ring-blue-100" : "border-slate-200"
       }`}
@@ -535,6 +559,7 @@ function OpportunityCard({ item, category, saved, active, onSelect, onSave, onAp
               onClick={(event) => {
                 event.stopPropagation();
                 onSelect?.();
+                onViewDetails();
               }}
             >
               View Details
@@ -543,6 +568,115 @@ function OpportunityCard({ item, category, saved, active, onSelect, onSave, onAp
         </section>
       </div>
     </article>
+  );
+}
+
+function OpportunityDetailsModal({ item, saved, onClose, onSave, onApply }) {
+  const isInternship = item.category === "internship";
+
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = "";
+    };
+  }, [onClose]);
+
+  return (
+    <div
+      className="fixed inset-0 z-[70] flex items-end justify-center bg-slate-950/55 p-0 backdrop-blur-sm sm:items-center sm:p-6"
+      role="presentation"
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget) onClose();
+      }}
+    >
+      <section
+        className="max-h-[94vh] w-full overflow-y-auto rounded-t-[24px] bg-white shadow-2xl sm:max-w-3xl sm:rounded-[24px]"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="opportunity-detail-title"
+      >
+        <header className="sticky top-0 z-10 flex items-start justify-between gap-4 border-b border-slate-200 bg-white/95 px-5 py-5 backdrop-blur sm:px-7">
+          <div className="min-w-0">
+            <div className="mb-3 flex flex-wrap gap-2">
+              <OpportunityBadge tone={isInternship ? "purple" : "blue"} label={isInternship ? "Internship" : "Job"} />
+              <OpportunityBadge tone="slate" label={item.type} />
+              {item.location === "Remote" && <OpportunityBadge tone="green" label="Remote" />}
+            </div>
+            <h2 id="opportunity-detail-title" className="text-2xl font-extrabold leading-tight text-slate-950 sm:text-3xl">
+              {item.title}
+            </h2>
+            <p className="mt-2 text-base font-semibold text-slate-600">{item.company}</p>
+          </div>
+          <button className="icon-button shrink-0" onClick={onClose} aria-label="Close details">
+            <X size={20} />
+          </button>
+        </header>
+
+        <div className="grid gap-7 px-5 py-6 sm:px-7 lg:grid-cols-[minmax(0,1fr)_240px]">
+          <div className="min-w-0 space-y-7">
+            <section>
+              <h3 className="text-lg font-extrabold text-slate-950">About this opportunity</h3>
+              <p className="mt-3 text-sm leading-7 text-slate-600">{item.description}</p>
+            </section>
+
+            <DetailList title="What you will do" items={item.responsibilities} />
+            <DetailList title="What we are looking for" items={item.requirements} />
+
+            <section>
+              <h3 className="text-lg font-extrabold text-slate-950">Skills</h3>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {item.skills.map((skill) => (
+                  <span key={skill} className="rounded-full bg-slate-100 px-3 py-2 text-xs font-bold text-slate-700">
+                    {skill}
+                  </span>
+                ))}
+              </div>
+            </section>
+          </div>
+
+          <aside className="h-fit rounded-2xl border border-slate-200 bg-slate-50 p-5">
+            <MatchBadge score={item.match} />
+            <div className="mt-5 space-y-4 text-sm font-semibold text-slate-600">
+              <MetaItem icon={MapPin} label={item.location} />
+              <MetaItem icon={Clock3} label={item.duration || item.type} />
+              {item.salary && <MetaItem icon={DollarSign} label={item.salary} />}
+              <MetaItem icon={Building2} label={item.industry} />
+              <MetaItem icon={CalendarCheck} label={item.posted} />
+            </div>
+          </aside>
+        </div>
+
+        <footer className="sticky bottom-0 grid gap-3 border-t border-slate-200 bg-white/95 px-5 py-4 backdrop-blur sm:grid-cols-[1fr_1.4fr] sm:px-7">
+          <button className="secondary-button w-full" onClick={onSave}>
+            <Star size={17} className={saved ? "fill-purple-500 text-purple-500" : ""} />
+            {saved ? "Saved" : "Save Opportunity"}
+          </button>
+          <button className="primary-button w-full" onClick={onApply}>Apply Now</button>
+        </footer>
+      </section>
+    </div>
+  );
+}
+
+function DetailList({ title, items = [] }) {
+  return (
+    <section>
+      <h3 className="text-lg font-extrabold text-slate-950">{title}</h3>
+      <ul className="mt-3 space-y-3">
+        {items.map((item) => (
+          <li key={item} className="flex gap-3 text-sm leading-6 text-slate-600">
+            <CheckCircle2 size={18} className="mt-0.5 shrink-0 text-blue-600" />
+            <span>{item}</span>
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }
 
