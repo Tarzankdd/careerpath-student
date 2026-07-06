@@ -108,6 +108,12 @@ export const jobs = [
     salary: "$650 - $850 / month",
     match: 92,
     posted: "Posted today",
+    verified: true,
+    verification: {
+      school: "Royal University of Phnom Penh Career Center",
+      id: "RUPP-CAREER-2048",
+      date: "June 2026"
+    },
     skills: ["Research", "Presentations", "SQL basics", "Dashboards"],
     description: "Turn operational data into clear recommendations for a fast-growing mobility team.",
     responsibilities: [
@@ -132,6 +138,12 @@ export const jobs = [
     salary: "$800 - $1,100 / month",
     match: 89,
     posted: "Posted 3 days ago",
+    verified: true,
+    verification: {
+      school: "Institute of Technology of Cambodia Career Office",
+      id: "ITC-JOB-1182",
+      date: "June 2026"
+    },
     skills: ["JavaScript", "React", "Accessibility", "TypeScript"],
     description: "Create customer-facing features for a digital payment product used by small businesses.",
     responsibilities: [
@@ -156,6 +168,7 @@ export const jobs = [
     salary: "$7 - $10 / hour",
     match: 85,
     posted: "Posted 5 days ago",
+    verified: false,
     skills: ["Branding", "Figma", "Layout", "UI/UX"],
     description: "Help prepare social assets, pitch decks, and portfolio-ready brand systems.",
     responsibilities: [
@@ -180,6 +193,12 @@ export const jobs = [
     salary: "$450 - $600 / month",
     match: 82,
     posted: "Posted 1 week ago",
+    verified: true,
+    verification: {
+      school: "National University of Management Career Center",
+      id: "NUM-EMPLOY-731",
+      date: "May 2026"
+    },
     skills: ["Email marketing", "Events", "Copywriting", "Analytics"],
     description: "Coordinate campus events, write outreach copy, and track growth experiments.",
     responsibilities: [

@@ -3,6 +3,7 @@ import {
   BriefcaseBusiness,
   Building2,
   CalendarCheck,
+  CreditCard,
   CheckCircle2,
   ChevronRight,
   Clock3,
@@ -15,10 +16,15 @@ import {
   MapPin,
   Bookmark,
   Search,
+  ShieldCheck,
   Sparkles,
   Star,
   Target,
+  Users,
   UserRound,
+  Crown,
+  Minus,
+  Plus,
   X
 } from "lucide-react";
 import { courses, industries, internships, jobs, locations, roadmap, tips } from "./data.js";
@@ -29,6 +35,7 @@ const tabs = [
   { id: "jobs", label: "Jobs", icon: BriefcaseBusiness },
   { id: "plan", label: "Career Plan", icon: Target },
   { id: "profile", label: "Profile", icon: UserRound },
+  { id: "plans", label: "Plans", icon: CreditCard },
   { id: "saved", label: "Saved", icon: Star }
 ];
 
@@ -43,6 +50,7 @@ function App() {
   const [toast, setToast] = useState("");
   const [checkedSteps, setCheckedSteps] = useState(["Update CV", "Pick 2 career paths"]);
   const [detailOpportunity, setDetailOpportunity] = useState(null);
+  const [activeSubscription, setActiveSubscription] = useState("Free");
 
   const saveOpportunity = (item, category) => {
     setSaved((current) => {
@@ -134,6 +142,15 @@ function App() {
             <CareerPlan checkedSteps={checkedSteps} toggleStep={toggleStep} />
           )}
           {activeTab === "profile" && <Profile />}
+          {activeTab === "plans" && (
+            <SubscriptionPlans
+              activePlan={activeSubscription}
+              onChoose={(plan) => {
+                setActiveSubscription(plan);
+                showToast(`${plan} selected for this prototype`);
+              }}
+            />
+          )}
           {activeTab === "saved" && <Saved saved={saved} updateStatus={updateStatus} />}
         </main>
       </div>
@@ -337,6 +354,7 @@ function DashboardOpportunityRow({ item, saved, onSave, onApply, onViewDetails }
             <OpportunityBadge tone={isJob ? "blue" : "purple"} label={isJob ? "Job" : "Internship"} />
             <OpportunityBadge tone="slate" label={item.type} />
             {item.location === "Remote" && <OpportunityBadge tone="green" label="Remote" />}
+            {item.verified && <VerifiedBadge compact />}
           </div>
 
           <div>
@@ -403,6 +421,7 @@ function OpportunityPage({
   const [industry, setIndustry] = useState("All");
   const [location, setLocation] = useState("All locations");
   const [level, setLevel] = useState("All");
+  const [verification, setVerification] = useState("All jobs");
   const [selectedId, setSelectedId] = useState(items[0].id);
 
   const filtered = useMemo(() => {
@@ -411,9 +430,10 @@ function OpportunityPage({
       const industryMatch = industry === "All" || item.industry === industry;
       const locationMatch = location === "All locations" || item.location === location;
       const levelMatch = !showLevel || level === "All" || item.level === level;
-      return typeMatch && industryMatch && locationMatch && levelMatch;
+      const verificationMatch = !showLevel || verification === "All jobs" || item.verified;
+      return typeMatch && industryMatch && locationMatch && levelMatch && verificationMatch;
     });
-  }, [items, type, industry, location, level, showLevel]);
+  }, [items, type, industry, location, level, verification, showLevel]);
 
   const selected = filtered.find((item) => item.id === selectedId) || filtered[0] || items[0];
 
@@ -421,13 +441,21 @@ function OpportunityPage({
     <div className="space-y-6">
       <PageHeader eyebrow={eyebrow} title={title} description={description} />
       <div className="card p-4">
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <div className={`grid gap-3 sm:grid-cols-2 ${showLevel ? "xl:grid-cols-5" : "xl:grid-cols-3"}`}>
           <FilterSelect label="Work type" value={type} onChange={setType} options={["All", "Full-time", "Part-time"]} />
           {showLevel && (
             <FilterSelect label="Level" value={level} onChange={setLevel} options={["All", "Entry-level", "Junior"]} />
           )}
           <FilterSelect label="Industry" value={industry} onChange={setIndustry} options={["All", ...industries]} />
           <FilterSelect label="Location" value={location} onChange={setLocation} options={locations} />
+          {showLevel && (
+            <FilterSelect
+              label="Trust"
+              value={verification}
+              onChange={setVerification}
+              options={["All jobs", "School certified"]}
+            />
+          )}
         </div>
       </div>
       <div className="grid gap-6 xl:grid-cols-[1fr_390px]">
@@ -497,6 +525,7 @@ function OpportunityCard({ item, category, saved, active, onSelect, onSave, onAp
               <OpportunityBadge tone="blue" label={item.type} />
               {item.location === "Remote" && <OpportunityBadge tone="green" label="Remote" />}
               {item.level && <OpportunityBadge tone="slate" label={item.level} />}
+              {item.verified && <VerifiedBadge compact />}
             </div>
             <h3 className="text-[22px] font-extrabold leading-tight text-slate-950">{item.title}</h3>
             <p className="mt-2 text-base font-semibold text-slate-700">{item.company}</p>
@@ -607,6 +636,7 @@ function OpportunityDetailsModal({ item, saved, onClose, onSave, onApply }) {
               <OpportunityBadge tone={isInternship ? "purple" : "blue"} label={isInternship ? "Internship" : "Job"} />
               <OpportunityBadge tone="slate" label={item.type} />
               {item.location === "Remote" && <OpportunityBadge tone="green" label="Remote" />}
+              {item.verified && <VerifiedBadge compact />}
             </div>
             <h2 id="opportunity-detail-title" className="text-2xl font-extrabold leading-tight text-slate-950 sm:text-3xl">
               {item.title}
@@ -627,6 +657,16 @@ function OpportunityDetailsModal({ item, saved, onClose, onSave, onApply }) {
 
             <DetailList title="What you will do" items={item.responsibilities} />
             <DetailList title="What we are looking for" items={item.requirements} />
+
+            {item.verified && (
+              <section className="rounded-2xl border border-emerald-200 bg-emerald-50 p-5">
+                <VerifiedBadge />
+                <p className="mt-3 text-sm font-semibold text-emerald-950">Verified by {item.verification.school}</p>
+                <p className="mt-1 text-sm leading-6 text-emerald-800">
+                  The school reviewed the employer identity, contact details, and role description. Certificate {item.verification.id}, reviewed {item.verification.date}.
+                </p>
+              </section>
+            )}
 
             <section>
               <h3 className="text-lg font-extrabold text-slate-950">Skills</h3>
@@ -695,6 +735,15 @@ function OpportunityBadge({ tone, label }) {
   );
 }
 
+function VerifiedBadge({ compact = false }) {
+  return (
+    <span className={`inline-flex items-center gap-1.5 rounded-full bg-emerald-50 font-extrabold text-emerald-700 ring-1 ring-emerald-200 ${compact ? "px-3 py-1 text-xs" : "px-3 py-2 text-sm"}`}>
+      <ShieldCheck size={compact ? 14 : 17} />
+      School certified
+    </span>
+  );
+}
+
 function MatchBadge({ score }) {
   return (
     <div className="inline-flex items-center gap-2 rounded-full border border-blue-100 bg-white px-3 py-2 shadow-sm">
@@ -735,6 +784,14 @@ function DetailCard({ item, category, onSave, onApply }) {
         {item.duration && <InfoRow label="Duration" value={item.duration} />}
         {item.salary && <InfoRow label="Salary range" value={item.salary} />}
       </div>
+      {item.verified && (
+        <div className="mt-5 rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
+          <VerifiedBadge />
+          <p className="mt-2 text-xs font-semibold leading-5 text-emerald-800">
+            Verified by {item.verification.school}
+          </p>
+        </div>
+      )}
       <div className="mt-5">
         <p className="text-sm font-bold text-slate-900">Skills you will use</p>
         <div className="mt-2 flex flex-wrap gap-2">
@@ -895,6 +952,174 @@ function Profile() {
         </div>
       </div>
     </div>
+  );
+}
+
+function SubscriptionPlans({ activePlan, onChoose }) {
+  const [friendCount, setFriendCount] = useState(3);
+  const premiumFeatures = [
+    "Unlimited saved opportunities and application tracking",
+    "AI career match scores and personalized recommendations",
+    "School-certified job filter and priority trust alerts",
+    "Advanced resume feedback and interview preparation",
+    "Career roadmap insights and new-role notifications"
+  ];
+  const freeFeatures = [
+    "Browse all internships and entry-level jobs",
+    "Save up to 5 opportunities",
+    "Basic career roadmap and progress checklist",
+    "Standard resume tips"
+  ];
+
+  const plans = [
+    {
+      id: "Individual",
+      icon: UserRound,
+      name: "Individual",
+      price: "$1.50",
+      period: "/ month",
+      description: "Premium career tools for one student account.",
+      details: ["1 student account", "All premium features", "Cancel anytime"]
+    },
+    {
+      id: "Friends",
+      icon: Users,
+      name: "Friends sharing",
+      price: `$${friendCount.toFixed(2)}`,
+      period: "/ month total",
+      description: "$1 per person each month for a private group of 2 to 5 friends.",
+      details: [`${friendCount} separate student accounts`, "Private group progress board", "Each friend keeps personal applications"]
+    },
+    {
+      id: "Organization",
+      icon: Building2,
+      name: "Organization",
+      price: "$10",
+      period: "/ month",
+      description: "For schools, clubs, and career centers supporting student groups.",
+      details: ["Up to 25 student seats", "Admin member management", "Shared progress and outcome reports"]
+    }
+  ];
+
+  return (
+    <div className="space-y-6">
+      <PageHeader
+        eyebrow="Simple student pricing"
+        title="Choose the support that fits you"
+        description="Start free, upgrade alone, share with friends, or give a student organization one affordable workspace."
+      />
+
+      <section className="grid gap-5 lg:grid-cols-3">
+        {plans.map((plan) => {
+          const Icon = plan.icon;
+          const selected = activePlan.startsWith(plan.id);
+          return (
+            <article
+              key={plan.id}
+              className={`card flex min-h-[390px] flex-col p-6 ${plan.id === "Friends" ? "border-blue-300 ring-4 ring-blue-100" : ""}`}
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50 text-blue-700">
+                  <Icon size={21} />
+                </div>
+                {plan.id === "Friends" && <span className="pill border-blue-200 bg-blue-50 text-blue-700">Best value</span>}
+              </div>
+              <h3 className="mt-5 text-xl font-extrabold text-slate-950">{plan.name}</h3>
+              <p className="mt-2 min-h-[48px] text-sm leading-6 text-slate-600">{plan.description}</p>
+              <div className="mt-5 flex items-end gap-2">
+                <span className="text-4xl font-extrabold text-slate-950">{plan.price}</span>
+                <span className="pb-1 text-sm font-semibold text-slate-500">{plan.period}</span>
+              </div>
+
+              {plan.id === "Friends" && (
+                <div className="mt-4 flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 p-2">
+                  <span className="pl-2 text-sm font-bold text-slate-700">Friends</span>
+                  <div className="flex items-center gap-3">
+                    <button
+                      className="icon-button h-8 w-8"
+                      onClick={() => setFriendCount((count) => Math.max(2, count - 1))}
+                      aria-label="Remove one friend"
+                    >
+                      <Minus size={15} />
+                    </button>
+                    <span className="w-4 text-center text-sm font-extrabold">{friendCount}</span>
+                    <button
+                      className="icon-button h-8 w-8"
+                      onClick={() => setFriendCount((count) => Math.min(5, count + 1))}
+                      aria-label="Add one friend"
+                    >
+                      <Plus size={15} />
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              <ul className="mt-5 flex-1 space-y-3">
+                {plan.details.map((detail) => (
+                  <li key={detail} className="flex gap-2 text-sm leading-5 text-slate-600">
+                    <CheckCircle2 size={17} className="mt-0.5 shrink-0 text-blue-600" />
+                    {detail}
+                  </li>
+                ))}
+              </ul>
+              <button
+                className={selected ? "secondary-button mt-6 w-full" : "primary-button mt-6 w-full"}
+                onClick={() => onChoose(plan.id === "Friends" ? `Friends (${friendCount} people)` : plan.id)}
+              >
+                {selected ? "Current selection" : `Choose ${plan.name}`}
+              </button>
+            </article>
+          );
+        })}
+      </section>
+
+      <section className="card overflow-hidden">
+        <div className="border-b border-slate-200 p-6">
+          <div className="flex items-center gap-3">
+            <Crown className="text-purple-600" size={22} />
+            <div>
+              <h3 className="text-xl font-extrabold text-slate-950">Free and Premium features</h3>
+              <p className="mt-1 text-sm text-slate-500">A clear view of what students receive at each level.</p>
+            </div>
+          </div>
+        </div>
+        <div className="grid md:grid-cols-2">
+          <div className="p-6 md:border-r md:border-slate-200">
+            <p className="text-sm font-extrabold uppercase tracking-wide text-slate-500">Free</p>
+            <p className="mt-2 text-2xl font-extrabold text-slate-950">$0 forever</p>
+            <ul className="mt-5 space-y-4">
+              {freeFeatures.map((feature) => <PlanFeature key={feature} feature={feature} />)}
+            </ul>
+            <button
+              className={activePlan === "Free" ? "secondary-button mt-6 w-full" : "primary-button mt-6 w-full"}
+              onClick={() => onChoose("Free")}
+            >
+              {activePlan === "Free" ? "Current plan" : "Switch to Free"}
+            </button>
+          </div>
+          <div className="border-t border-slate-200 bg-blue-50/50 p-6 md:border-t-0">
+            <p className="text-sm font-extrabold uppercase tracking-wide text-blue-600">Premium</p>
+            <p className="mt-2 text-2xl font-extrabold text-slate-950">Included with every paid plan</p>
+            <ul className="mt-5 space-y-4">
+              {premiumFeatures.map((feature) => <PlanFeature key={feature} feature={feature} premium />)}
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <p className="text-center text-xs font-semibold text-slate-500">
+        Prototype pricing in USD. No payment is collected and package selection is simulated.
+      </p>
+    </div>
+  );
+}
+
+function PlanFeature({ feature, premium = false }) {
+  return (
+    <li className="flex gap-3 text-sm font-medium leading-6 text-slate-700">
+      <CheckCircle2 size={19} className={`mt-0.5 shrink-0 ${premium ? "text-blue-600" : "text-emerald-600"}`} />
+      {feature}
+    </li>
   );
 }
 
