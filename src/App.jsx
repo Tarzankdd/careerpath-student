@@ -354,7 +354,7 @@ function DashboardOpportunityRow({ item, saved, onSave, onApply, onViewDetails }
             <OpportunityBadge tone={isJob ? "blue" : "purple"} label={isJob ? "Job" : "Internship"} />
             <OpportunityBadge tone="slate" label={item.type} />
             {item.location === "Remote" && <OpportunityBadge tone="green" label="Remote" />}
-            {item.verified && <VerifiedBadge compact />}
+            {item.verified && <VerifiedBadge compact onClick={onViewDetails} />}
           </div>
 
           <div>
@@ -430,7 +430,7 @@ function OpportunityPage({
       const industryMatch = industry === "All" || item.industry === industry;
       const locationMatch = location === "All locations" || item.location === location;
       const levelMatch = !showLevel || level === "All" || item.level === level;
-      const verificationMatch = !showLevel || verification === "All jobs" || item.verified;
+      const verificationMatch = !showLevel || verification !== "School certified" || item.verified === true;
       return typeMatch && industryMatch && locationMatch && levelMatch && verificationMatch;
     });
   }, [items, type, industry, location, level, verification, showLevel]);
@@ -449,15 +449,24 @@ function OpportunityPage({
           <FilterSelect label="Industry" value={industry} onChange={setIndustry} options={["All", ...industries]} />
           <FilterSelect label="Location" value={location} onChange={setLocation} options={locations} />
           {showLevel && (
-            <FilterSelect
-              label="Trust"
-              value={verification}
-              onChange={setVerification}
-              options={["All jobs", "School certified"]}
-            />
+            <TrustFilter value={verification} onChange={setVerification} />
           )}
         </div>
       </div>
+      {showLevel && verification === "School certified" && (
+        <div className="flex flex-col gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-start gap-3">
+            <ShieldCheck className="mt-0.5 shrink-0 text-emerald-700" size={21} />
+            <div>
+              <p className="font-extrabold text-emerald-950">Showing {filtered.length} school-certified jobs</p>
+              <p className="mt-1 text-sm leading-5 text-emerald-800">Each employer and role has been reviewed by a partner school career center.</p>
+            </div>
+          </div>
+          <button className="secondary-button border-emerald-200 bg-white text-emerald-800" onClick={() => setVerification("All jobs")}>
+            Show all jobs
+          </button>
+        </div>
+      )}
       <div className="grid gap-6 xl:grid-cols-[1fr_390px]">
         <div className="space-y-4">
           <div className="flex items-center justify-between">
@@ -525,7 +534,7 @@ function OpportunityCard({ item, category, saved, active, onSelect, onSave, onAp
               <OpportunityBadge tone="blue" label={item.type} />
               {item.location === "Remote" && <OpportunityBadge tone="green" label="Remote" />}
               {item.level && <OpportunityBadge tone="slate" label={item.level} />}
-              {item.verified && <VerifiedBadge compact />}
+              {item.verified && <VerifiedBadge compact onClick={onViewDetails} />}
             </div>
             <h3 className="text-[22px] font-extrabold leading-tight text-slate-950">{item.title}</h3>
             <p className="mt-2 text-base font-semibold text-slate-700">{item.company}</p>
@@ -735,13 +744,31 @@ function OpportunityBadge({ tone, label }) {
   );
 }
 
-function VerifiedBadge({ compact = false }) {
-  return (
-    <span className={`inline-flex items-center gap-1.5 rounded-full bg-emerald-50 font-extrabold text-emerald-700 ring-1 ring-emerald-200 ${compact ? "px-3 py-1 text-xs" : "px-3 py-2 text-sm"}`}>
+function VerifiedBadge({ compact = false, onClick }) {
+  const className = `inline-flex items-center gap-1.5 rounded-full bg-emerald-50 font-extrabold text-emerald-700 ring-1 ring-emerald-200 ${compact ? "px-3 py-1 text-xs" : "px-3 py-2 text-sm"}`;
+  const content = (
+    <>
       <ShieldCheck size={compact ? 14 : 17} />
       School certified
-    </span>
+    </>
   );
+
+  if (onClick) {
+    return (
+      <button
+        className={`${className} transition hover:bg-emerald-100`}
+        onClick={(event) => {
+          event.stopPropagation();
+          onClick();
+        }}
+        aria-label="View school certification details"
+      >
+        {content}
+      </button>
+    );
+  }
+
+  return <span className={className}>{content}</span>;
 }
 
 function MatchBadge({ score }) {
@@ -1212,6 +1239,32 @@ function FilterSelect({ label, value, onChange, options }) {
         {options.map((option) => <option key={option}>{option}</option>)}
       </select>
     </label>
+  );
+}
+
+function TrustFilter({ value, onChange }) {
+  return (
+    <fieldset>
+      <legend className="text-xs font-bold uppercase tracking-wide text-slate-500">Trust</legend>
+      <div className="mt-1 grid grid-cols-2 rounded-xl border border-slate-200 bg-slate-100 p-1">
+        {["All jobs", "School certified"].map((option) => {
+          const active = value === option;
+          return (
+            <button
+              type="button"
+              key={option}
+              aria-pressed={active}
+              onClick={() => onChange(option)}
+              className={`min-h-10 rounded-lg px-2 text-xs font-bold transition ${
+                active ? "bg-white text-blue-700 shadow-sm" : "text-slate-500 hover:text-slate-800"
+              }`}
+            >
+              {option}
+            </button>
+          );
+        })}
+      </div>
+    </fieldset>
   );
 }
 
